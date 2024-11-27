@@ -25,7 +25,7 @@ app.get("/api/navbar", async (req, res) => {
     res.json(menuTree);
   } catch (error) {
     console.error("Error fetching NavBar:", error);
-    req.status(500).json({ error: "Failed to fetch Navbar" });
+    res.status(500).json({ error: "Failed to fetch Navbar" });
   }
 });
 

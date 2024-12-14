@@ -1,14 +1,29 @@
 // Module Import
 const express = require("express");
 const cors = require("cors");
-const pool = require("./db/pool");
+const pool = require("../config/db/pool");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const buildMenuTree = require("./services/menuTreeUtils");
+const buildMenuTree = require("../services/menuTreeUtils");
 
 const app = express();
 app.use(cors());
+
+//Endpoint untuk Routes
+app.get("/api/routes", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT *
+      FROM menu
+      WHERE is_active = true
+      `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching Routes:", err);
+    res.status(500).json({ error: "Failed to fetch Routes" });
+  }
+});
 
 //Endpoint untuk mengambil database NavBar Homepage
 app.get("/api/navbar", async (req, res) => {
@@ -64,6 +79,19 @@ app.get("/api/dashMenu", async (req, res) => {
   } catch (error) {
     console.error("Error fetching Dashboard Menus:", error);
     res.status(500).json({ error: "Failed to fetch Dash Menus" });
+  }
+});
+
+// Endpoint untuk mengambil data user untuk table
+app.get("/api/users", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * 
+      FROM user
+      `);
+  } catch (err) {
+    console.error("Error fetching data users :", err);
+    res.status(500).json({ error: "Failed to fetch data users" });
   }
 });
 

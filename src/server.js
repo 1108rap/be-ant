@@ -9,6 +9,7 @@ const buildMenuTree = require("../services/menuTreeUtils");
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.json());
 
 //Endpoint untuk Routes
 app.get("/api/routes", async (req, res) => {
@@ -86,12 +87,67 @@ app.get("/api/dashMenu", async (req, res) => {
 app.get("/api/users", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * 
-      FROM user
+      select *,
+      CASE 
+      WHEN active_at IS NOT NULL THEN 'active'
+      ELSE 'inactive'
+      END AS status
+      from  "user" u
+      left join employee e on e.id = u.employee_id 
       `);
+    res.json(result.rows);
   } catch (err) {
     console.error("Error fetching data users :", err);
     res.status(500).json({ error: "Failed to fetch data users" });
+  }
+});
+
+// Endpoint untuk mendapatkan semua users
+app.get("/api/employees", async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM employee`);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Endpoint untuk data employee pada create users
+app.get("/employeecreateusers", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, name
+      FROM employee
+      WHERE id NOT IN (select employee_id from "user")
+      `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+});
+
+// Enpoint untuk menambahkan data users
+app.post("/adduser", async (req, res) => {
+  const { employee_id, username, password } = req.body;
+
+  if (!employee_id || !username || !password) {
+    return res
+      .status(400)
+      .json({ error: "Employee ID, Username and Password are required" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `INSERT INTO "user" (employee_id, username, password) VALUES ($1,$2,$3) RETURNING *`,
+      [employee_id, username, hashedPassword]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

@@ -1,11 +1,11 @@
 // Module Import
 const express = require("express");
 const cors = require("cors");
-const pool = require("../config/db/pool");
+const pool = require("./config/database/pool");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const buildMenuTree = require("../services/menuTreeUtils");
+const buildMenuTree = require("./utils/menuTreeUtils");
 
 const app = express();
 app.use(cors());
@@ -94,6 +94,7 @@ app.get("/api/users", async (req, res) => {
       END AS status
       from  users u
       left join employees e on e.id = u.employee_id 
+      WHERE u.deleted_at is null
       `);
     res.json(result.rows);
   } catch (err) {
@@ -147,12 +148,21 @@ app.post("/adduser", async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    if (err.code === "23505") {
+      return res.status(400).json({
+        error: "Duplicate data",
+        message: err.detail,
+      });
+    }
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-const PORT = 5000;
+// PORT dari environment variable atau default ke 5000
+const PORT = process.env.PORT || 5000;
+
+//Start Server
 app.listen(PORT, () => {
   console.log(`Server is Running on Port ${PORT}`);
 });

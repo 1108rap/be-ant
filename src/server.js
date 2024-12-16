@@ -92,8 +92,8 @@ app.get("/api/users", async (req, res) => {
       WHEN active_at IS NOT NULL THEN 'active'
       ELSE 'inactive'
       END AS status
-      from  "user" u
-      left join employee e on e.id = u.employee_id 
+      from  users u
+      left join employees e on e.id = u.employee_id 
       `);
     res.json(result.rows);
   } catch (err) {
@@ -105,7 +105,7 @@ app.get("/api/users", async (req, res) => {
 // Endpoint untuk mendapatkan semua users
 app.get("/api/employees", async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM employee`);
+    const result = await pool.query(`SELECT * FROM employees`);
     res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);
@@ -118,8 +118,8 @@ app.get("/employeecreateusers", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, name
-      FROM employee
-      WHERE id NOT IN (select employee_id from "user")
+      FROM employees
+      WHERE id NOT IN (select employee_id from users)
       `);
     res.json(result.rows);
   } catch (error) {
@@ -131,6 +131,7 @@ app.get("/employeecreateusers", async (req, res) => {
 // Enpoint untuk menambahkan data users
 app.post("/adduser", async (req, res) => {
   const { employee_id, username, password } = req.body;
+  const createdAt = new Date().toISOString();
 
   if (!employee_id || !username || !password) {
     return res
@@ -141,8 +142,8 @@ app.post("/adduser", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      `INSERT INTO "user" (employee_id, username, password) VALUES ($1,$2,$3) RETURNING *`,
-      [employee_id, username, hashedPassword]
+      `INSERT INTO users (employee_id, username, password,created_at) VALUES ($1,$2,$3,$4) RETURNING *`,
+      [employee_id, username, hashedPassword, createdAt]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

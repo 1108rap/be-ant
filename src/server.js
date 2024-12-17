@@ -159,6 +159,27 @@ app.post("/adduser", async (req, res) => {
   }
 });
 
+//Endpoint untuk Table Menus
+app.get("/api/menus", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT *,
+      CASE
+        WHEN type = 'T1' then 'Homepage'
+        WHEN type = 'T2' then 'Shopping List'
+        WHEN type = 'T3' then 'Dashboard'
+        ELSE type
+        End as type
+      FROM menu
+      WHERE deleted_at is null
+      `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching data Menus :", err);
+    res.status(500).json({ error: "Failed to fetch data menus" });
+  }
+});
+
 // PORT dari environment variable atau default ke 5000
 const PORT = process.env.PORT || 5000;
 

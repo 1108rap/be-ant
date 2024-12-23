@@ -2,21 +2,22 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const routes = require("./routes");
-const errorMiddleware = require("./middlewares/errormiddlewares");
+const userRoutes = require("./routes/rUsers");
+const menuRoutes = require("./routes/rMenus");
+const empRoutes = require("./routes/rEmployees");
 
 const app = express();
 
 //Middleware Global
 app.use(cors());
 app.use(morgan("dev"));
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//Routes
-app.use("/api", routes);
+// V2
+app.use(express.json());
+app.use("/api", userRoutes);
+app.use("/api", menuRoutes);
+app.use("/api", empRoutes);
 
-// Error handling middleware
-app.use(errorMiddleware);
-
+// Export
 module.exports = app;

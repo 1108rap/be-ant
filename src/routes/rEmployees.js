@@ -6,7 +6,7 @@ const empController = require("../controllers/cEmployees");
 const router = express.Router();
 
 // Direction
-router.get("/employees", empController.getEmployees);
+router.get("/api/employees", empController.getEmployees);
 
 // Export
 module.exports = router;

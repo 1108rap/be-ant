@@ -6,9 +6,10 @@ const userController = require("../controllers/cUsers");
 const router = express.Router();
 
 // Direction
-router.get("/users", userController.getUsers);
-router.post("/createuser", userController.addUsers);
-router.get("/refuseremp", userController.refEmpUsers);
+router.get("/api/users", userController.getUsers);
+router.post("/api/createuser", userController.addUsers);
+router.get("/api/refuseremp", userController.refEmpUsers);
+router.put("/api/users/:id/delete", userController.deleteUser);
 
 // Export Router
 module.exports = router;

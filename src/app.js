@@ -15,9 +15,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // V2
 app.use(express.json());
-app.use("/api", userRoutes);
-app.use("/api", menuRoutes);
-app.use("/api", empRoutes);
+// app.use("/api", userRoutes);
+app.use(userRoutes);
+app.use(menuRoutes);
+app.use(empRoutes);
 
 // Export
 module.exports = app;

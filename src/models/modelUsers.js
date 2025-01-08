@@ -1,5 +1,4 @@
 //Import Library
-const { SELECT } = require("sequelize/lib/query-types");
 const pool = require("../config/database/pool");
 const bcrypt = require("bcrypt");
 

@@ -3,6 +3,7 @@ const modelUsers = require("../models/modelUsers");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 //Main Processs
 const getUsers = async (req, res) => {
@@ -123,14 +124,18 @@ const templateUsers = async (req, res) => {
     });
 
     // Protect ID Edited
-    worksheet.protect({
+    worksheet.protect("", {
       selectLockedCells: true,
       selectUnlockedCells: true,
     });
 
     // Save worksheet to file
+    const downloadDir = path.join(os.homedir(), "Downloads");
     const createDate = new Date().toISOString();
-    const filePath = `./Template_Users_${createDate}.xlsx`;
+    const filePath = path.join(
+      downloadDir,
+      `./Template_Users_${createDate}.xlsx`
+    );
     await workbook.xlsx.writeFile(filePath);
     console.log(`Excel file successfully created at ${filePath}`);
   } catch (err) {

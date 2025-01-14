@@ -132,9 +132,12 @@ const templateUsers = async (req, res) => {
     // Save worksheet to file
     const downloadDir = path.join(os.homedir(), "Downloads");
     const createDate = new Date().toISOString();
+    const dateOnly = createDate.split("T")[0];
+    const [year, month, day] = dateOnly.split("-");
+    const formattedDate = `${year}${month}${day}`;
     const filePath = path.join(
       downloadDir,
-      `./Template_Users_${createDate}.xlsx`
+      `./Template_Users_${formattedDate}.xlsx`
     );
     await workbook.xlsx.writeFile(filePath);
     console.log(`Excel file successfully created at ${filePath}`);

@@ -38,7 +38,7 @@ const refEmpForUsers = async () => {
   const result = await pool.query(`
     SELECT id,name
     FROM employees
-    WHERE id NOT IN(SELECT employee_id FROM users)
+    WHERE id NOT IN(SELECT employee_id FROM users where deleted_at is null)
     `);
   return result.rows;
 };

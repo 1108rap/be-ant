@@ -76,6 +76,7 @@ const templateUsers = async (req, res) => {
   try {
     // Get Data Employee Ref
     const employees = await modelUsers.refEmpForUsers();
+    console.log(employees);
 
     // Create Workbook Excel
     const workbook = new ExcelJS.Workbook();
@@ -83,7 +84,8 @@ const templateUsers = async (req, res) => {
 
     // Create Sheet Refrence
     const refSheet = workbook.addWorksheet("Ref");
-    refSheet.state = "veryHidden";
+    // refSheet.state = "veryHidden";
+    refSheet.state = "hidden";
 
     // Add Refrence Data
     refSheet.addRow(["Employee Name", "Employee ID"]);
@@ -124,25 +126,30 @@ const templateUsers = async (req, res) => {
     });
 
     // Protect ID Edited
-    worksheet.protect("", {
-      selectLockedCells: true,
-      selectUnlockedCells: true,
-    });
+    // worksheet.protect("", {
+    //   selectLockedCells: true,
+    //   selectUnlockedCells: true,
+    // });
 
-    // Save worksheet to file
-    const downloadDir = path.join(os.homedir(), "Downloads");
+    // Nomenklatur Penamaan File
     const createDate = new Date().toISOString();
     const dateOnly = createDate.split("T")[0];
     const [year, month, day] = dateOnly.split("-");
     const formattedDate = `${year}${month}${day}`;
+
+    // Save worksheet to file
+    const downloadDir = path.join(os.homedir(), "Downloads");
     const filePath = path.join(
       downloadDir,
       `./Template_Users_${formattedDate}.xlsx`
     );
     await workbook.xlsx.writeFile(filePath);
     console.log(`Excel file successfully created at ${filePath}`);
+    res.status(200).json({ message: "Template Created", path: filePath });
   } catch (err) {
     console.error("Error generate Excel file:", err);
+    res.status(500).json({ message: "failed Template Created", err });
   }
 };
+
 module.exports = { getUsers, addUsers, refEmpUsers, deleteUser, templateUsers };

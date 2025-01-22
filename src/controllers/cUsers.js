@@ -4,6 +4,7 @@ const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { query } = require("express");
 
 //Main Processs
 const getUsers = async (req, res) => {
@@ -71,12 +72,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Unfinish
 const templateUsers = async (req, res) => {
   try {
     // Get Data Employee Ref
     const employees = await modelUsers.refEmpForUsers();
-    console.log(employees);
 
     // Create Workbook Excel
     const workbook = new ExcelJS.Workbook();
@@ -84,7 +83,6 @@ const templateUsers = async (req, res) => {
 
     // Create Sheet Refrence
     const refSheet = workbook.addWorksheet("Ref");
-    // refSheet.state = "veryHidden";
     refSheet.state = "hidden";
 
     // Add Refrence Data
@@ -103,47 +101,47 @@ const templateUsers = async (req, res) => {
     ];
 
     // Create Data validation Name Employee
-    worksheet.getColumn("name").eachCell((cell, rowNumber) => {
-      if (rowNumber > 1) {
-        cell.dataValidation = {
-          type: "list",
-          allowBlank: true,
-          formula1: `Ref!$A$2:$A$${employees.length + 1}`,
-        };
-      }
-    });
+    for (let i = 2; i < 101; i++) {
+      const cellName = worksheet.getCell(`C${i}`);
+      cellName.dataValidation = {
+        type: "list",
+        allowBlank: true,
+        formulae: [`'Ref'!$A$2:$A$${employees.length + 1}`],
+      };
+    }
 
     //Lookup Employee ID From Name
-    worksheet.getColumn("employee_id").eachCell((cell, rowNumber) => {
-      if (rowNumber > 1) {
-        cell.value = {
-          formula: `IFERROR(VLOOKUP(C${rowNumber},Ref!$A$2:$B$${
-            employees.length + 1
-          },2,FALSE),"")`,
-        };
-        cell.style = { locked: true };
-      }
-    });
-
-    // Protect ID Edited
-    // worksheet.protect("", {
-    //   selectLockedCells: true,
-    //   selectUnlockedCells: true,
+    // worksheet.getColumn("employee_id").eachCell((cell, rowNumber) => {
+    //   if (rowNumber > 1) {
+    //     cell.value = {
+    //       formula: `IFERROR(VLOOKUP($C${rowNumber},'Ref'!$A:$B,2,FALSE),"")`,
+    //     };
+    //     cell.style = { locked: true };
+    //   }
     // });
+
+    for (let i = 2; i < 101; i++) {
+      const cellId = worksheet.getCell(`B${i}`);
+      cellId.value = {
+        formula: `IFERROR(VLOOKUP($C${i},'Ref'!$A:$B,2,FALSE),"")`,
+      };
+    }
 
     // Nomenklatur Penamaan File
     const createDate = new Date().toISOString();
     const dateOnly = createDate.split("T")[0];
     const [year, month, day] = dateOnly.split("-");
     const formattedDate = `${year}${month}${day}`;
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
 
     // Save worksheet to file
     const downloadDir = path.join(os.homedir(), "Downloads");
     const filePath = path.join(
       downloadDir,
-      `./Template_Users_${formattedDate}.xlsx`
+      `./Template_Users_${formattedDate}${randomNumber}.xlsx`
     );
     await workbook.xlsx.writeFile(filePath);
+
     console.log(`Excel file successfully created at ${filePath}`);
     res.status(200).json({ message: "Template Created", path: filePath });
   } catch (err) {
